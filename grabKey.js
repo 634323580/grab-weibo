@@ -22,26 +22,6 @@ mongoose.connection.on('connected', function () {
 go()
 async function go() {
   /**
-   * @description 保存文件
-   * @param data 内容， json数组
-   * @param paths 路径
-   */
-  function saveFile(data, paths) {
-    console.log('一共保存' + data.length + '条')
-
-    let content = JSON.stringify(data);
-    //指定创建目录及文件名称，__dirname为执行当前js文件的目录
-    let file = path.join(__dirname, paths);
-
-    //写入文件
-    fs.writeFile(file, content, function(err) {
-        if (err) {
-            return console.log(err);
-        }
-        console.log('文件创建成功，地址：' + file);
-    });
-  }
-  /**
    * @description 创建新页面
    * @param url 页面地址
    */
@@ -161,7 +141,6 @@ async function go() {
 
       keyList.push(...pageList)
       // 保存
-      await saveFile(keyList, 'data/grabKeyList.json')
       currentPage++
       if(currentPage <= totalPage) {
         // 跳转到下一页

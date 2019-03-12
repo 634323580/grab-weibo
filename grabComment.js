@@ -1,12 +1,11 @@
 const fs = require('fs'), //文件模块
   path = require('path'), //系统路径模块
-  qs = require('querystringify'),
-  puppeteer = require('puppeteer'),
   axios = require('axios-https-proxy-fix'),
   $ = require('cheerio'),
   mongoose = require('mongoose'),
   dbConfig = require('./db/config'),
-  commentsModels = require('./db/models/comments');
+  commentsModels = require('./db/models/comments'),
+  listModels = require('./db/models/list');
 
   /**
    * 连接
@@ -28,20 +27,14 @@ const fs = require('fs'), //文件模块
       host: '',
       port: '',
     }
+    let length = 0
     // 抓取的微博数据
-    grabKeyData = JSON.parse(fs.readFileSync(path.join(__dirname, 'data/grabKeyList.json'), 'utf8'));
-    // 上次保存长度
-    let lastSaveLength = 0
-    // 评论列表
-    let commentsList = []
-
+    grabKeyData = await listModels.find({});
     for(let i=0; i<grabKeyData.length; i++) {
       await start(grabKeyData[i].mid)
       console.log('当前进度' + (i+1 / grabKeyData.length * 100).toFixed(2) + '%')
     }
-    let tips = await saveFile(commentsList, 'data/grabCommentsList.json')
     console.log('全部抓完了')
-    console.log(tips);
     db.close()
 
     /**
@@ -68,13 +61,6 @@ const fs = require('fs'), //文件模块
           // 删除a标签
            _content('body a').remove()
            _content = _content('body').html().trim()
-          //  添加
-          commentsList.push({
-            mid: mid,
-            avator: _avator,
-            name: _name,
-            content: _content
-          })
 
           // 将数据插入数据库
           const db = new commentsModels({
@@ -84,14 +70,10 @@ const fs = require('fs'), //文件模块
             content: _content
           })
           await db.save()
+          length++
         })
-        console.log('已抓取' + commentsList.length + '条')
-        // 每抓100条保存一下
-        if((commentsList.length - lastSaveLength) >= 100) {
-          let _tips = await saveFile(commentsList, 'data/grabCommentsList.json')
-          console.log(_tips);
-          lastSaveLength = commentsList.length
-        }
+        console.log('已抓取' + length + '条')
+
         if(_actionData) {
           await cb('https://weibo.com/aj/v6/comment/big?ajwvr=6&'+_actionData+'&from=singleWeiBo&__rnd=1551851364327')
         }
@@ -105,7 +87,7 @@ const fs = require('fs'), //文件模块
     async function getComments(url) {
       let _option = {
         headers: {
-          Cookie: 'Ugrow-G0=5b31332af1361e117ff29bb32e4d8439; login_sid_t=e0fbd7e0d2c3bd37cf34e72b098d11c6; cross_origin_proto=SSL; YF-V5-G0=b8115b96b42d4782ab3a2201c5eba25d; WBStorage=39aa940fb6ef309a|undefined; _s_tentry=passport.weibo.com; wb_view_log=1920*10801; Apache=9491144929457.854.1552276347002; SINAGLOBAL=9491144929457.854.1552276347002; ULV=1552276347009:1:1:1:9491144929457.854.1552276347002:; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9WF4I43carcJRI5MKE2C1Hu45JpX5K2hUgL.Foep1heEeh-fShB2dJLoIEqLxKnLBoMLB-qLxK-L1-eLBKnLxKnL1hBL1-2LxKBLBonL12zEentt; SSOLoginState=1552276357; ALF=1583812371; SCF=AkJq-dSc7LTnenu6grVS99Di_EU1kpjiypI1_xLHeMS_77JEVJtiZ-HnvJy-RdOsoqn5Y68CWq4NmJY7-7w-1ak.; SUB=_2A25xgavEDeRhGeVP41ET8CvJzziIHXVS9poMrDV8PUNbmtBeLW_CkW9NTMLHggJXvKb0NZgClmqLENMWYdMHBhEw; SUHB=0sqBPo7LWLkU2p; un=18320326435; wvr=6; YF-Page-G0=ae24d9a5389d566d388790f1c25a266b; wb_view_log_3183205544=1920*10801; webim_unReadCount=%7B%22time%22%3A1552276368725%2C%22dm_pub_total%22%3A5%2C%22chat_group_pc%22%3A0%2C%22allcountNum%22%3A25%2C%22msgbox%22%3A0%7D'
+          Cookie: 'Ugrow-G0=57484c7c1ded49566c905773d5d00f82; login_sid_t=264d7a3b7802fa881aa6803a2a3ceb4e; cross_origin_proto=SSL; _s_tentry=passport.weibo.com; wb_view_log=1920*10801; Apache=7892657198804.198.1552355975421; SINAGLOBAL=7892657198804.198.1552355975421; ULV=1552355975427:1:1:1:7892657198804.198.1552355975421:; WBtopGlobal_register_version=ae9a9ec008078a68; SCF=Avt6CuTc8f5ibnk_xMIGBUniVSnlPtQvnf6VGPob_22AX9xL0OTBxfmOlnQLLqVO6BUUfFKzaiI2TdRmitgKxf8.; SUB=_2A25xg2L5DeRhGeVP41ET8CvJzziIHXVS-dMxrDV8PUNbmtBeLVnTkW9NTMLHgkLP0jMCrbXMvWawwqdkVrOWng2N; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9WF4I43carcJRI5MKE2C1Hu45JpX5K2hUgL.Foep1heEeh-fShB2dJLoIEqLxKnLBoMLB-qLxK-L1-eLBKnLxKnL1hBL1-2LxKBLBonL12zEentt; SUHB=09P9Cp1w-hR9ky; ALF=1552960809; SSOLoginState=1552356009; un=18320326435; wvr=6; YF-Page-G0=b98b45d9bba85e843a07e69c0880151a; wb_view_log_3183205544=1920*10801; YF-V5-G0=a5a6106293f9aeef5e34a2e71f04fae4; webim_unReadCount=%7B%22time%22%3A1552377903301%2C%22dm_pub_total%22%3A5%2C%22chat_group_pc%22%3A0%2C%22allcountNum%22%3A32%2C%22msgbox%22%3A0%7D'
         },
         // 设置超时10秒
         timeout: 10000
@@ -135,28 +117,6 @@ const fs = require('fs'), //文件模块
         }
         return await getComments(url)
       }
-    }
-      /**
-     * @description 保存文件
-     * @param data 内容， json数组
-     * @param paths 路径
-     */
-    function saveFile(data, paths) {
-      return new Promise((resolve, reject) => {
-        console.log('一共保存' + data.length + '条')
-        let content = JSON.stringify(data);
-        //指定创建目录及文件名称，__dirname为执行当前js文件的目录
-        let file = path.join(__dirname, paths);
-
-        //写入文件
-        fs.writeFile(file, content, function(err) {
-            if (err) {
-              reject(err)
-            }
-            resolve('文件创建成功，地址：' + file)
-        });
-      })
-
     }
   }
 

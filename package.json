@@ -12,6 +12,7 @@
     "axios": "^0.18.0",
     "axios-https-proxy-fix": "^0.17.1",
     "cheerio": "^1.0.0-rc.2",
+    "mongoose": "^5.4.19",
     "mysql2": "^1.6.5",
     "puppeteer": "1.11.0",
     "querystringify": "^2.1.0"
