@@ -1,6 +1,4 @@
-const fs = require('fs'), //文件模块
-  path = require('path'), //系统路径模块
-  axios = require('axios-https-proxy-fix'),
+const axios = require('axios-https-proxy-fix'),
   $ = require('cheerio'),
   mysql = require('mysql2/promise');
 
@@ -61,9 +59,8 @@ const fs = require('fs'), //文件模块
             content: _content
           })
           length++
-          console.log('已插入'+length+'条数据')
         })
-
+        console.log('已插入'+length+'条数据')
         if(_actionData) {
           await cb('https://weibo.com/aj/v6/comment/big?ajwvr=6&'+_actionData+'&from=singleWeiBo&__rnd=1551851364327')
         }
@@ -80,7 +77,7 @@ const fs = require('fs'), //文件模块
           Cookie: 'Ugrow-G0=57484c7c1ded49566c905773d5d00f82; login_sid_t=264d7a3b7802fa881aa6803a2a3ceb4e; cross_origin_proto=SSL; _s_tentry=passport.weibo.com; wb_view_log=1920*10801; Apache=7892657198804.198.1552355975421; SINAGLOBAL=7892657198804.198.1552355975421; ULV=1552355975427:1:1:1:7892657198804.198.1552355975421:; WBtopGlobal_register_version=ae9a9ec008078a68; SCF=Avt6CuTc8f5ibnk_xMIGBUniVSnlPtQvnf6VGPob_22AX9xL0OTBxfmOlnQLLqVO6BUUfFKzaiI2TdRmitgKxf8.; SUB=_2A25xg2L5DeRhGeVP41ET8CvJzziIHXVS-dMxrDV8PUNbmtBeLVnTkW9NTMLHgkLP0jMCrbXMvWawwqdkVrOWng2N; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9WF4I43carcJRI5MKE2C1Hu45JpX5K2hUgL.Foep1heEeh-fShB2dJLoIEqLxKnLBoMLB-qLxK-L1-eLBKnLxKnL1hBL1-2LxKBLBonL12zEentt; SUHB=09P9Cp1w-hR9ky; ALF=1552960809; SSOLoginState=1552356009; un=18320326435; wvr=6; YF-Page-G0=b98b45d9bba85e843a07e69c0880151a; wb_view_log_3183205544=1920*10801; YF-V5-G0=a5a6106293f9aeef5e34a2e71f04fae4; webim_unReadCount=%7B%22time%22%3A1552374525481%2C%22dm_pub_total%22%3A5%2C%22chat_group_pc%22%3A0%2C%22allcountNum%22%3A32%2C%22msgbox%22%3A0%7D'
         },
         // 设置超时10秒
-        timeout: 10000
+        timeout: 30000
       }
       // 是否设置了代理
       if(proxy.host) {
@@ -107,28 +104,6 @@ const fs = require('fs'), //文件模块
         }
         return await getComments(url)
       }
-    }
-      /**
-     * @description 保存文件
-     * @param data 内容， json数组
-     * @param paths 路径
-     */
-    function saveFile(data, paths) {
-      return new Promise((resolve, reject) => {
-        console.log('一共保存' + data.length + '条')
-        let content = JSON.stringify(data);
-        //指定创建目录及文件名称，__dirname为执行当前js文件的目录
-        let file = path.join(__dirname, paths);
-
-        //写入文件
-        fs.writeFile(file, content, function(err) {
-            if (err) {
-              reject(err)
-            }
-            resolve('文件创建成功，地址：' + file)
-        });
-      })
-
     }
   })()
 

@@ -1,6 +1,4 @@
-const fs = require('fs'), //文件模块
-  path = require('path'), //系统路径模块
-  qs = require('querystringify'),
+const qs = require('querystringify'),
   puppeteer = require('puppeteer'),
   mysql = require('mysql2');
 
