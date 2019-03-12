@@ -1,0 +1,19 @@
+{
+  "name": "reptile",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.18.0",
+    "axios-https-proxy-fix": "^0.17.1",
+    "cheerio": "^1.0.0-rc.2",
+    "mysql2": "^1.6.5",
+    "puppeteer": "1.11.0",
+    "querystringify": "^2.1.0"
+  }
+}
