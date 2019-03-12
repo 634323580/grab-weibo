@@ -2,45 +2,20 @@ const fs = require('fs'), //文件模块
   path = require('path'), //系统路径模块
   qs = require('querystringify'),
   puppeteer = require('puppeteer'),
-  mongoose = require('mongoose'),
-  dbConfig = require('./db/config'),
-  listModels = require('./db/models/list')
+  mysql = require('mysql2');
 
-/**
- * 连接
- */
-mongoose.connect(dbConfig.dbs,{useNewUrlParser: true});
-const db = mongoose.connection;//获取connection实例
+  // 创建数据库连接
+  const connection = mysql.createConnection({
+    host: '192.168.31.223',
+    port: '6610',
+    user: 'qph_b2c',
+    password:'zhaoyl(1181*%P)',
+    database: 'zhipeng',
+    charset:'utf8',
+  });
+  connection.connect();
 
-/**
-  * 连接成功
-  */
-mongoose.connection.on('connected', function () {
-    console.log('Mongoose connection open to ' + dbConfig.dbs);
-});
-
-go()
-async function go() {
-  /**
-   * @description 保存文件
-   * @param data 内容， json数组
-   * @param paths 路径
-   */
-  function saveFile(data, paths) {
-    console.log('一共保存' + data.length + '条')
-
-    let content = JSON.stringify(data);
-    //指定创建目录及文件名称，__dirname为执行当前js文件的目录
-    let file = path.join(__dirname, paths);
-
-    //写入文件
-    fs.writeFile(file, content, function(err) {
-        if (err) {
-            return console.log(err);
-        }
-        console.log('文件创建成功，地址：' + file);
-    });
-  }
+(async function(){
   /**
    * @description 创建新页面
    * @param url 页面地址
@@ -107,9 +82,7 @@ async function go() {
    * @param keyword 关键字
    */
   async function geabKey(keyword) {
-    let page = await newPage("https://s.weibo.com/weibo?q="+keyword+"&Refer=index")
-    // keyList
-    let keyList = [],
+    let page = await newPage("https://s.weibo.com/weibo?q="+keyword+"&Refer=index"),
     // 总页数
     totalPage,
     // 当前页数
@@ -156,12 +129,20 @@ async function go() {
           resolve(_keyList)
         })
       })
-      await listModels.insertMany(pageList)
-      console.log('插入数据成功')
-
-      keyList.push(...pageList)
+      //把对象的转成纯数组
+      let values = [];
+      pageList.forEach(function(n, i){
+          var _arr = [];
+          for(var m in n){
+              _arr.push(n[m]);
+          }
+          values.push(_arr);
+      })
       // 保存
-      await saveFile(keyList, 'data/grabKeyList.json')
+      connection.query('INSERT INTO list(`mid`,`name`,`avator`,`content`,`piclist`) VALUES ?', [values], function(err, result) {
+          if (err) throw err;
+          console.log('插入'+pageList.length+'条数据')
+      });
       currentPage++
       if(currentPage <= totalPage) {
         // 跳转到下一页
@@ -190,5 +171,5 @@ async function go() {
   await geabKey('面膜')
 
   browser.close()
-  db.close()
-}
+  connection.end();
+})()
