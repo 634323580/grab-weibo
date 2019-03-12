@@ -1,6 +1,4 @@
-const fs = require('fs'), //文件模块
-  path = require('path'), //系统路径模块
-  axios = require('axios-https-proxy-fix'),
+const axios = require('axios-https-proxy-fix'),
   $ = require('cheerio'),
   mongoose = require('mongoose'),
   dbConfig = require('./db/config'),
