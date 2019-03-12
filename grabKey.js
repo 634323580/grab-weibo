@@ -1,26 +1,10 @@
 const fs = require('fs'), //文件模块
   path = require('path'), //系统路径模块
   qs = require('querystringify'),
-  puppeteer = require('puppeteer'),
-  mongoose = require('mongoose'),
-  dbConfig = require('./db/config'),
-  listModels = require('./db/models/list')
+  puppeteer = require('puppeteer');
 
-/**
- * 连接
- */
-mongoose.connect(dbConfig.dbs,{useNewUrlParser: true});
-const db = mongoose.connection;//获取connection实例
 
-/**
-  * 连接成功
-  */
-mongoose.connection.on('connected', function () {
-    console.log('Mongoose connection open to ' + dbConfig.dbs);
-});
-
-go()
-async function go() {
+(async function(){
   /**
    * @description 保存文件
    * @param data 内容， json数组
@@ -156,8 +140,6 @@ async function go() {
           resolve(_keyList)
         })
       })
-      await listModels.insertMany(pageList)
-      console.log('插入数据成功')
 
       keyList.push(...pageList)
       // 保存
@@ -190,5 +172,4 @@ async function go() {
   await geabKey('面膜')
 
   browser.close()
-  db.close()
-}
+})()
