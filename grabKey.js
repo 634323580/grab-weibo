@@ -88,10 +88,11 @@ const fs = require('fs'), //文件模块
 
   /**
    * @description 通过搜索抓取关键字微博
-   * @param keyword 关键字
+   * @param option 选项
    */
-  async function geabKey(keyword) {
-    let page = await newPage("https://s.weibo.com/weibo?q="+keyword+"&Refer=index")
+  async function geabKey(option) {
+    let query = decodeURIComponent(qs.stringify(option))
+    let page = await newPage("https://s.weibo.com/weibo?"+query+"&Refer=index")
     // keyList
     let keyList = [],
     // 总页数
@@ -147,7 +148,7 @@ const fs = require('fs'), //文件模块
       currentPage++
       if(currentPage <= totalPage) {
         // 跳转到下一页
-        await page.goto("https://s.weibo.com/weibo?q="+keyword+"&Refer=index&page="+currentPage , {
+        await page.goto("https://s.weibo.com/weibo?"+query+"&Refer=index&page="+currentPage , {
           timeout: 0
         });
         // 插入jq
@@ -155,7 +156,7 @@ const fs = require('fs'), //文件模块
           url: "https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"
         });
         // 再次抓取
-        await start(keyword)
+        await start(option)
       }
     }
     await start()
@@ -164,12 +165,15 @@ const fs = require('fs'), //文件模块
   const browser = await puppeteer.launch({
     devtools: true,
     // 关闭headless模式, 不会打开浏览器
-    headless: true
+    headless: false
   });
   // 自动登录
   await automaticLogin('18320326435', 'KOFOX520')
   // 开始抓取关键字微博
-  await geabKey('面膜')
+  await geabKey({
+    q: '面膜',
+    timescope: 'custom:2019-03-01:2019-03-05'
+  })
 
   browser.close()
 })()
