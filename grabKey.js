@@ -1,7 +1,7 @@
 const qs = require('querystringify'),
   puppeteer = require('puppeteer'),
   mysql = require('mysql2');
-
+let grabLength = 0
 // 创建数据库连接
 const connection = mysql.createConnection({
   host: '192.168.31.223',
@@ -102,8 +102,9 @@ connection.connect();
           // 去除转发的微博
           $(item).find('.card-comment').length && $(item).find('.card-comment').remove()
           let _content = $(item).find('p[node-type="feed_list_content_full"]').length ? $(item).find('p[node-type="feed_list_content_full"]') : $(item).find('p[node-type="feed_list_content"]')
-          _content.find('a').length && _content.find('a').remove()
-          _content = String(_content.html()).replace(/<(?!img).*?>/g, '').trim()
+          // _content.find('a').length && _content.find('a').remove()
+          // _content = String(_content.html()).replace(/<(?!img).*?>/g, '').trim()
+          _content = _content.html().replace(/<[^>]+>/g,"").trim()
           let _picList = []
           let _picListDom = $(item).find('.media-piclist li')
           _picListDom.each((index, item) => {
@@ -131,6 +132,7 @@ connection.connect();
       //把对象的转成纯数组
       let values = [];
       pageList.forEach(function (n, i) {
+        grabLength++
         var _arr = [];
         for (var m in n) {
           _arr.push(n[m]);
@@ -140,7 +142,7 @@ connection.connect();
       // 保存
       connection.query('INSERT INTO list(`mid`,`name`,`avator`,`content`,`piclist`) VALUES ?', [values], function (err, result) {
         if (err) throw err;
-        console.log('插入' + pageList.length + '条数据')
+        console.log('共抓取' + grabLength + '条数据')
       });
       currentPage++
       if (currentPage <= totalPage) {
@@ -168,8 +170,8 @@ connection.connect();
   await automaticLogin('18320326435', 'KOFOX520')
   // 开始抓取关键字微博
   await geabKey({
-    q: '面膜',
-    timescope: 'custom:2019-03-01:2019-03-05'
+    q: '周杰伦',
+    timescope: 'custom:2019-03-10:2019-03-13'
   })
 
   browser.close()
