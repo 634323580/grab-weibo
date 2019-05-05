@@ -162,7 +162,7 @@ async function go() {
     headless: true
   });
   // 自动登录
-  await automaticLogin('18320326435', 'KOFOX520')
+  await automaticLogin('账号', '密码')
   // 开始抓取关键字微博
   await geabKey('面膜')
 
