@@ -89,10 +89,10 @@ connection.connect();
     // 获取总页数
     totalPage = await page.evaluate(() => {
       return new Promise(resolve => {
-        resolve($('.s-scroll>li:last-child>a').attr('href').split('?')[1])
+        $('.s-scroll>li:last-child>a').attr('href') ? resolve($('.s-scroll>li:last-child>a').attr('href').split('?')[1]) : resolve(0)
       })
     });
-    totalPage = qs.parse(totalPage).page
+    totalPage = totalPage && qs.parse(totalPage).page
     let start = async function () {
       console.log('正在抓取第' + currentPage + '页')
       let pageList = await page.evaluate(async () => {
@@ -104,7 +104,7 @@ connection.connect();
           let _content = $(item).find('p[node-type="feed_list_content_full"]').length ? $(item).find('p[node-type="feed_list_content_full"]') : $(item).find('p[node-type="feed_list_content"]')
           // _content.find('a').length && _content.find('a').remove()
           // _content = String(_content.html()).replace(/<(?!img).*?>/g, '').trim()
-          _content = _content.html().replace(/<[^>]+>/g,"").trim()
+          _content = String(_content.html()).replace(/<[^>]+>/g,"").trim()
           let _picList = []
           let _picListDom = $(item).find('.media-piclist li')
           _picListDom.each((index, item) => {
@@ -122,6 +122,7 @@ connection.connect();
               content: _content,
               // 图片
               piclist: _picList.join(','),
+              grasp_comments: false
             })
           }
         })
@@ -140,7 +141,7 @@ connection.connect();
         values.push(_arr);
       })
       // 保存
-      connection.query('INSERT INTO list(`mid`,`name`,`avator`,`content`,`piclist`) VALUES ?', [values], function (err, result) {
+      connection.query('INSERT INTO list(`mid`,`name`,`avator`,`content`,`piclist`,`grasp_comments`) VALUES ?', [values], function (err, result) {
         if (err) throw err;
         console.log('共抓取' + grabLength + '条数据')
       });
@@ -158,7 +159,7 @@ connection.connect();
         await start()
       }
     }
-    await start()
+    totalPage && await start()
   }
 
   const browser = await puppeteer.launch({
@@ -167,11 +168,11 @@ connection.connect();
     headless: true
   });
   // 自动登录
-  await automaticLogin('18320326435', 'KOFOX520')
+  await automaticLogin('', '')
   // 开始抓取关键字微博
   await geabKey({
-    q: '周杰伦',
-    timescope: 'custom:2019-03-10:2019-03-13'
+    q: '杭州巨响',
+    // timescope: 'custom:2019-03-10:2019-03-13'
   })
 
   browser.close()

@@ -23,7 +23,13 @@ const axios = require('axios-https-proxy-fix'),
   // 抓取的微博数据
   grabKeyData = rows;
   for (let i = 0; i < grabKeyData.length; i++) {
-    await start(grabKeyData[i].mid)
+    if(!grabKeyData[i].grasp_comments) {
+      await start(grabKeyData[i].mid)
+      let modsql = 'UPDATE list SET grasp_comments = ? WHERE mid = ?'
+      let modsqlparams = [true, grabKeyData[i].mid]
+      await connection.query(modsql, modsqlparams)
+      console.log('抓完一条')
+    }
     console.log('当前进度' + ((i + 1 ) / grabKeyData.length * 100).toFixed(2) + '%')
   }
   connection.end();
@@ -131,7 +137,7 @@ const axios = require('axios-https-proxy-fix'),
   async function getComments(url) {
     let _option = {
       headers: {
-        Cookie: 'Ugrow-G0=169004153682ef91866609488943c77f; login_sid_t=ef8f45b3cd78ef67c5364936b08566d7; cross_origin_proto=SSL; YF-V5-G0=b59b0905807453afddda0b34765f9151; WBStorage=201903151105|undefined; _s_tentry=passport.weibo.com; wb_view_log=1920*10801; Apache=2071306759622.107.1552619137061; SINAGLOBAL=2071306759622.107.1552619137061; ULV=1552619137073:1:1:1:2071306759622.107.1552619137061:; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9WF4I43carcJRI5MKE2C1Hu45JpX5K2hUgL.Foep1heEeh-fShB2dJLoIEqLxKnLBoMLB-qLxK-L1-eLBKnLxKnL1hBL1-2LxKBLBonL12zEentt; ALF=1584155143; SSOLoginState=1552619144; SCF=AuzIs4FYcWkD0hHgQzpW3rRuUykTtYp0w-F0vpPkeUTwUIpnfr8x1aVyh-WOFmH_KE4-5IdLk3DRvZnwvcv6ibI.; SUB=_2A25xj2bYDeRhGeVP41ET8CvJzziIHXVS_d8QrDV8PUNbmtBeLXTSkW9NTMLHgpYpqIdyWbMxb3P6N1hA1Rd3FLj-; SUHB=0WGc3EWk-Uoqvz; un=18320326435; wvr=6'
+        Cookie: '_s_tentry=news.ifeng.com; UOR=news.ifeng.com,widget.weibo.com,news.ifeng.com; Ugrow-G0=5b31332af1361e117ff29bb32e4d8439; login_sid_t=20bb28051abf07c3b1af70911a2e3b2a; cross_origin_proto=SSL; YF-V5-G0=59104684d5296c124160a1b451efa4ac; wb_view_log=1920*10801; Apache=2942262446527.437.1553068659282; SINAGLOBAL=2942262446527.437.1553068659282; ULV=1553068659294:1:1:1:2942262446527.437.1553068659282:; SCF=Av2RP4wuuFMYeOPxqBP_GZ07Z2yOLQOFImcx7IncVRofvISqD-bFu6bs6acG88AojqIAuZYO8tI06DDA0y9E0WY.; SUB=_2A25xlYoYDeRhGeVP41ET8CvJzziIHXVS4vzQrDV8PUNbmtBeLW_fkW9NTMLHgk30p3ERx1miQDuhD53eiM9m-NNV; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9WF4I43carcJRI5MKE2C1Hu45JpX5K2hUgL.Foep1heEeh-fShB2dJLoIEqLxKnLBoMLB-qLxK-L1-eLBKnLxKnL1hBL1-2LxKBLBonL12zEentt; SUHB=0qj0AQEVS93o4q; ALF=1553675464; SSOLoginState=1553070664; wb_view_log_3183205544=1920*10801; wvr=6; YF-Page-G0=19f6802eb103b391998cb31325aed3bc|1553071480|1553071480; webim_unReadCount=%7B%22time%22%3A1553071482755%2C%22dm_pub_total%22%3A5%2C%22chat_group_pc%22%3A0%2C%22allcountNum%22%3A44%2C%22msgbox%22%3A0%7D'
       },
       // 设置超时
       timeout: 30000
@@ -145,9 +151,10 @@ const axios = require('axios-https-proxy-fix'),
     }
     try {
       let _res = await axios.get(url, _option)
-      return new Promise(resolve => {
-        resolve(_res.data.data.html)
-      })
+      // return new Promise(resolve => {
+      //   resolve(_res.data.data.html)
+      // })
+      return _res.data.data.html
     } catch (error) {
       console.log('正在切换ip...')
       let _proxy = await axios.get('http://webapi.http.zhimacangku.com/getip?num=1&type=2&pro=&city=0&yys=0&port=1&time=1&ts=0&ys=0&cs=0&lb=1&sb=0&pb=4&mr=1&regions=')
